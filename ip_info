@@ -1,0 +1,16 @@
+#!/bin/bash
+
+#ip_info - prints you specific information about chosen ip
+
+#base command
+BASE=`curl -s ipinfo.io/$1`
+
+#grepped variables
+CITY=`echo "$BASE" | grep city | cut -d\" -f4` 
+ORG=`echo "$BASE" | grep org | cut -d\" -f4 | cut -d' ' -f2-`
+ASN=`echo "$BASE" | grep org | cut -d\" -f4 | cut -d' ' -f1`
+
+#output
+echo "Location: $CITY"
+echo "Organization: $ORG"
+echo "ASN: $ASN"
