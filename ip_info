@@ -5,7 +5,7 @@
 #constants
 CSVFLAG=0
 ARG=$1 #basicly this is not a constant, but I need it here(so messy)
-#ARG=${@: -1} maybe ill use it later 
+#ARG=${@: -1} maybe ill use it later
 while getopts "helpcsv" opt; do
   case "$opt" in
   h|help)
@@ -31,15 +31,25 @@ if [ -z $ARG ]; then #checks if there is no arguments given
   echo "No ip given."
   exit 0
 fi
-#variables
-BASE=`curl -s ipinfo.io/$ARG` #base command - this prints a lot of information about ip, vars below are just specific sections of output
-CITY=`echo "$BASE" | grep city | cut -d\" -f4`
-ORG=`echo "$BASE" | grep org | cut -d\" -f4 | cut -d' ' -f2-`
-ASN=`echo "$BASE" | grep org | cut -d\" -f4 | cut -d' ' -f1`
 
+#variables
+test='([1-9]?[0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])' #NOT MADE BY ME, made by Fabien from d0wn.com thank you :) source: http://www.d0wn.com/bash-ip-validation/
+if [[ $ARG =~ ^$test\.$test\.$test\.$test$ ]]; then
+  BASE=`curl -s ipinfo.io/$ARG` #base command - this prints a lot of information about ip, vars below are just specific sections of output
+else
+echo "IP address is not correct"
+exit 0
+fi
+
+#specific greppes that takes information from base
+CITY=`echo "$BASE" | grep city | cut -d\" -f4`
+if [[ -z $CITY ]]; then CITY="NOT KNOWN"; fi
+ORG=`echo "$BASE" | grep org | cut -d\" -f4 | cut -d' ' -f2-`
+if [[ -z $ORG ]]; then ORG="NOT KNOWN"; fi
+ASN=`echo "$BASE" | grep org | cut -d\" -f4 | cut -d' ' -f1`
+if [[ -z $ASN ]]; then ASN="NOT KNOWN"; fi
 
 #outputs
-
 if [ $CSVFLAG -eq 1 ]; then
   echo "$CITY;$ORG;$ASN" #csv output
 else
