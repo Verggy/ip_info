@@ -1,16 +1,50 @@
 #!/bin/bash
 
-#ip_info - prints you specific information about chosen ip
+#ip_info - This is a script that prints an: Location, Organization name and ASN of an specific IP address.
 
-#base command
-BASE=`curl -s ipinfo.io/$1`
-
-#grepped variables
-CITY=`echo "$BASE" | grep city | cut -d\" -f4` 
+#constants
+CSVFLAG=0
+ARG=$1 #basicly this is not a constant, but I need it here(so messy)
+#ARG=${@: -1} maybe ill use it later 
+while getopts "helpcsv" opt; do
+  case "$opt" in
+  h|help)
+    echo "ip_info - This is a script that prints an: Location, Organization name and ASN of an specific IP address."
+    echo " "
+    echo "ip_info [options] ip address"
+    echo " "
+    echo "options:"
+    echo "-h, -help   prints short brief help"
+    echo "-c, -csv    changes output to csv format"
+    exit 0
+    ;;
+  c|csv)
+    ARG=$2
+    CSVFLAG=1
+    ;;
+  esac
+done
+if [ -z $ARG ]; then #checks if there is no arguments given
+  if [ -p /dev/stdin ]; then #checks if standard input isn't empty
+    ARG=`cat`
+  fi
+  echo "No ip given."
+  exit 0
+fi
+#variables
+BASE=`curl -s ipinfo.io/$ARG` #base command - this prints a lot of information about ip, vars below are just specific sections of output
+CITY=`echo "$BASE" | grep city | cut -d\" -f4`
 ORG=`echo "$BASE" | grep org | cut -d\" -f4 | cut -d' ' -f2-`
 ASN=`echo "$BASE" | grep org | cut -d\" -f4 | cut -d' ' -f1`
 
-#output
-echo "Location: $CITY"
-echo "Organization: $ORG"
-echo "ASN: $ASN"
+
+#outputs
+
+if [ $CSVFLAG -eq 1 ]; then
+  echo "$CITY;$ORG;$ASN" #csv output
+else
+  #standard output
+  echo "Location: $CITY"
+  echo "Organization: $ORG"
+  echo "ASN: $ASN"
+fi
